@@ -258,14 +258,6 @@ export function SocialInsuranceApp() {
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-gray-400">
                   <span className="flex items-center">
-                    <span className="mr-1">🛡️</span>
-                    安全・安心
-                  </span>
-                  <span className="flex items-center">
-                    <span className="mr-1">🔒</span>
-                    データ保護
-                  </span>
-                  <span className="flex items-center">
                     <span className="mr-1">📱</span>
                     レスポンシブ対応
                   </span>
