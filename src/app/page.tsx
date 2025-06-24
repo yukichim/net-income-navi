@@ -1,10 +1,5 @@
-import { SocialInsuranceApp } from "@/app/_components/social-insurance-app";
-import { HydrateClient } from "@/trpc/server";
+import { SocialInsuranceApp } from "@/components/social-insurance-app";
 
 export default async function Home() {
-	return (
-		<HydrateClient>
-			<SocialInsuranceApp />
-		</HydrateClient>
-	);
+	return <SocialInsuranceApp />;
 }
