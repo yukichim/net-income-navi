@@ -61,6 +61,7 @@ export function DetailedSocialInsuranceCalculator() {
   const [prefecture, setPrefecture] = useState('tokyo');
   const [isPartTime, setIsPartTime] = useState(false);
   const [shouldCalculate, setShouldCalculate] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
 
   // 数値フォーマット関数
   const formatNumber = (value: string): string => {
@@ -81,8 +82,10 @@ export function DetailedSocialInsuranceCalculator() {
     if (field === 'paymentDays') {
       if (value !== '' && (!/^\d+$/.test(value) || Number(value) > 31)) return;
     } else if (field !== 'month') {
-      // 金額項目はフォーマット
-      value = formatNumber(value);
+      // IME入力中でない場合のみフォーマット
+      if (!isComposing) {
+        value = formatNumber(value);
+      }
     }
 
     setMonthlyPayments(prev => 
@@ -98,6 +101,50 @@ export function DetailedSocialInsuranceCalculator() {
     setAge(value);
     setShouldCalculate(false);
   };
+
+  // IME入力開始時
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  // IME入力終了時（金額項目用）
+  const handleCompositionEndPayment = (monthIndex: number, field: keyof MonthlyPayment, e: React.CompositionEvent<HTMLInputElement>) => {
+    setIsComposing(false);
+    const value = e.currentTarget.value;
+    
+    if (field === 'paymentDays') {
+      if (value !== '' && (!/^\d+$/.test(value) || Number(value) > 31)) return;
+      setMonthlyPayments(prev => 
+        prev.map((payment, index) =>
+          index === monthIndex ? { ...payment, [field]: value } : payment
+        )
+      );
+    } else if (field !== 'month') {
+      const formattedValue = formatNumber(value);
+      setMonthlyPayments(prev => 
+        prev.map((payment, index) =>
+          index === monthIndex ? { ...payment, [field]: formattedValue } : payment
+        )
+      );
+    }
+    setShouldCalculate(false);
+  };
+
+  // IME入力終了時（年齢用）
+  const handleCompositionEndAge = (e: React.CompositionEvent<HTMLInputElement>) => {
+    setIsComposing(false);
+    const value = e.currentTarget.value;
+    if (value !== '' && (!/^\d+$/.test(value) || Number(value) > 120)) return;
+    setAge(value);
+    setShouldCalculate(false);
+  };
+
+//  // IME入力終了時（年齢用）
+//  const handleCompositionEndAge = (e: React.CompositionEvent<HTMLInputElement>) => {
+//    setIsComposing(false);
+//    const value = e.currentTarget.value;
+//    handleAgeChange(value);
+//  };
 
   // tRPC query
   const { data, isLoading, error } = api.socialInsurance.calculateDetailed.useQuery(
@@ -175,6 +222,8 @@ export function DetailedSocialInsuranceCalculator() {
                   type="text"
                   value={age}
                   onChange={(e) => handleAgeChange(e.target.value)}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={handleCompositionEndAge}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 text-lg font-medium"
                   placeholder="35"
                 />
@@ -262,6 +311,8 @@ export function DetailedSocialInsuranceCalculator() {
                           type="text"
                           value={payment.basicSalary}
                           onChange={(e) => handlePaymentChange(monthIndex, 'basicSalary', e.target.value)}
+                          onCompositionStart={handleCompositionStart}
+                          onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'basicSalary', e)}
                           className="w-full px-4 py-3 border-2 border-red-200 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all duration-200 text-lg font-medium"
                           placeholder="300,000"
                         />
@@ -277,6 +328,8 @@ export function DetailedSocialInsuranceCalculator() {
                           type="text"
                           value={payment.paymentDays}
                           onChange={(e) => handlePaymentChange(monthIndex, 'paymentDays', e.target.value)}
+                          onCompositionStart={handleCompositionStart}
+                          onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'paymentDays', e)}
                           className="w-32 px-4 py-3 border-2 border-red-200 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all duration-200 text-lg font-medium text-center"
                           placeholder="22"
                         />
@@ -296,6 +349,8 @@ export function DetailedSocialInsuranceCalculator() {
                       type="text"
                       value={payment.overtimeAllowance}
                       onChange={(e) => handlePaymentChange(monthIndex, 'overtimeAllowance', e.target.value)}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'overtimeAllowance', e)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg font-medium"
                       placeholder="50,000"
                     />
@@ -310,6 +365,8 @@ export function DetailedSocialInsuranceCalculator() {
                       type="text"
                       value={payment.commutingAllowance}
                       onChange={(e) => handlePaymentChange(monthIndex, 'commutingAllowance', e.target.value)}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'commutingAllowance', e)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg font-medium"
                       placeholder="15,000"
                     />
@@ -324,6 +381,8 @@ export function DetailedSocialInsuranceCalculator() {
                       type="text"
                       value={payment.positionAllowance}
                       onChange={(e) => handlePaymentChange(monthIndex, 'positionAllowance', e.target.value)}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'positionAllowance', e)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg font-medium"
                       placeholder="30,000"
                     />
@@ -338,6 +397,8 @@ export function DetailedSocialInsuranceCalculator() {
                       type="text"
                       value={payment.familyAllowance}
                       onChange={(e) => handlePaymentChange(monthIndex, 'familyAllowance', e.target.value)}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'familyAllowance', e)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg font-medium"
                       placeholder="20,000"
                     />
@@ -352,6 +413,8 @@ export function DetailedSocialInsuranceCalculator() {
                       type="text"
                       value={payment.housingAllowance}
                       onChange={(e) => handlePaymentChange(monthIndex, 'housingAllowance', e.target.value)}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'housingAllowance', e)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg font-medium"
                       placeholder="25,000"
                     />
@@ -366,6 +429,8 @@ export function DetailedSocialInsuranceCalculator() {
                       type="text"
                       value={payment.otherAllowances}
                       onChange={(e) => handlePaymentChange(monthIndex, 'otherAllowances', e.target.value)}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'otherAllowances', e)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg font-medium"
                       placeholder="10,000"
                     />
@@ -384,6 +449,8 @@ export function DetailedSocialInsuranceCalculator() {
                       type="text"
                       value={payment.bonus}
                       onChange={(e) => handlePaymentChange(monthIndex, 'bonus', e.target.value)}
+                      onCompositionStart={handleCompositionStart}
+                      onCompositionEnd={(e) => handleCompositionEndPayment(monthIndex, 'bonus', e)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-200 text-lg font-medium"
                       placeholder="100,000"
                     />

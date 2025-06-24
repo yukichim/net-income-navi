@@ -13,6 +13,7 @@ export function SocialInsuranceCalculator() {
     prefecture: 'tokyo',
   });
 
+  const [isComposing, setIsComposing] = useState(false);
   const [shouldCalculate, setShouldCalculate] = useState(false);
 
   // 数値フォーマット関数
@@ -52,12 +53,35 @@ export function SocialInsuranceCalculator() {
     if (field === 'age') {
       if (value !== '' && (!/^\d+$/.test(value) || Number(value) > 120)) return;
     } else if (field === 'aprilSalary' || field === 'maySalary' || field === 'juneSalary') {
-      // 給与項目は金額フォーマット
-      value = formatNumber(value);
+      // IME入力中でない場合のみフォーマット
+      if (!isComposing) {
+        value = formatNumber(value);
+      }
     }
     
     setInput(prev => ({ ...prev, [field]: value }));
     setShouldCalculate(false);
+  };
+
+  // IME入力開始時
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  // IME入力終了時
+  const handleCompositionEnd = (field: string, e: React.CompositionEvent<HTMLInputElement>) => {
+    setIsComposing(false);
+    // IME入力完了後に値を再フォーマット
+    const value = e.currentTarget.value;
+    if (field === 'aprilSalary' || field === 'maySalary' || field === 'juneSalary') {
+      const formattedValue = formatNumber(value);
+      setInput(prev => ({ ...prev, [field]: formattedValue }));
+      setShouldCalculate(false);
+    } else if (field === 'age') {
+      if (value !== '' && (!/^\d+$/.test(value) || Number(value) > 120)) return;
+      setInput(prev => ({ ...prev, [field]: value }));
+      setShouldCalculate(false);
+    }
   };
 
   const handleCalculate = () => {
@@ -108,6 +132,8 @@ export function SocialInsuranceCalculator() {
                   type="text"
                   value={input.aprilSalary}
                   onChange={(e) => handleInputChange('aprilSalary', e.target.value)}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={(e) => handleCompositionEnd('aprilSalary', e)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-100 transition-all duration-300 text-lg font-semibold group-hover:border-green-300 bg-gray-50 focus:bg-white"
                   placeholder="例: 350,000"
                 />
@@ -125,6 +151,8 @@ export function SocialInsuranceCalculator() {
                   type="text"
                   value={input.maySalary}
                   onChange={(e) => handleInputChange('maySalary', e.target.value)}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={(e) => handleCompositionEnd('maySalary', e)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all duration-300 text-lg font-semibold group-hover:border-blue-300 bg-gray-50 focus:bg-white"
                   placeholder="例: 350,000"
                 />
@@ -142,6 +170,8 @@ export function SocialInsuranceCalculator() {
                   type="text"
                   value={input.juneSalary}
                   onChange={(e) => handleInputChange('juneSalary', e.target.value)}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={(e) => handleCompositionEnd('juneSalary', e)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all duration-300 text-lg font-semibold group-hover:border-purple-300 bg-gray-50 focus:bg-white"
                   placeholder="例: 350,000"
                 />
@@ -159,6 +189,8 @@ export function SocialInsuranceCalculator() {
                   type="text"
                   value={input.age}
                   onChange={(e) => handleInputChange('age', e.target.value)}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={(e) => handleCompositionEnd('age', e)}
                   className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all duration-300 text-lg font-semibold group-hover:border-orange-300 bg-gray-50 focus:bg-white"
                   placeholder="例: 35"
                 />

@@ -12,7 +12,10 @@ export function SocialInsuranceApp() {
       <div className="px-4 py-8">
         {/* メインタイトル - カード状 */}
         <div className="max-w-6xl mx-auto mb-8">
-          <div className="relative bg-gradient-to-br from-yellow-100 via-yellow-600 to-red-200 text-white shadow-2xl overflow-hidden rounded-2xl">
+          <div className={`relative ${activeTab === 'detailed' 
+            ? 'bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700' 
+            : 'bg-gradient-to-br from-yellow-100 via-yellow-600 to-red-200'
+          } text-white shadow-2xl overflow-hidden rounded-2xl`}>
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 left-0 w-full h-full" 
@@ -26,7 +29,10 @@ export function SocialInsuranceApp() {
               <div className="mb-6">
                 <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight flex items-center justify-center">
                   <span className="text-4xl md:text-5xl mr-4">{activeTab === 'detailed' ? '📊' : '💰'}</span>
-                  <span className="bg-gradient-to-r from-white via-yellow-100 to-white bg-clip-text text-transparent">
+                  <span className={activeTab === 'detailed' 
+                    ? "bg-gradient-to-r from-purple-200 via-blue-200 to-indigo-200 bg-clip-text text-transparent" 
+                    : "bg-gradient-to-r from-white via-yellow-100 to-white bg-clip-text text-transparent"
+                  }>
                     {activeTab === 'detailed' ? '手取りナビ Pro' : '手取りナビ'}
                   </span>
                 </h1>
